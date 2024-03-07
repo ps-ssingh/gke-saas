@@ -1,0 +1,62 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: Build and Deploy to GKE
+
+on:
+  push:
+    branches:
+      - 'main'
+
+
+env:
+  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+  GKE_CLUSTER: cluster-1    # Add your cluster name here.
+  GKE_ZONE: us-central1-c   # Add your cluster zone here.
+  DEPLOYMENT_NAME: gke-test # Add your deployment name here.
+  IMAGE: static-site
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Setup gcloud CLI
+    - uses: google-github-actions/setup-gcloud@1bee7de035d65ec5da40a31f8589e240eba8fde5
+      with:
+        service_account_key: ${{ secrets.GKE_SA_KEY }}
+        project_id: ${{ secrets.GKE_PROJECT }}
+
+    # Configure Docker to use the gcloud command-line tool as a credential
+    # helper for authentication
+    - run: |-
+        gcloud --quiet auth configure-docker
+
+    # Get the GKE credentials so we can deploy to the cluster
+    - uses: google-github-actions/get-gke-credentials@db150f2cc60d1716e61922b832eae71d2a45938f
+      with:
+        cluster_name: ${{ env.GKE_CLUSTER }}
+        location: ${{ env.GKE_ZONE }}
+        credentials: ${{ secrets.GKE_SA_KEY }}
+
+    - name: Build a container image with Kaniko
+      uses: cloudbees-io/kaniko@v1
+      with:
+          dockerfile: Dockerfile
+          context: .
+          destination: <registry host>/<image name>:1.0.1,<registry host>/<image name>:latest
+          build-args: BUILDKIT_CONTEXT_KEEP_GIT_DIR=1,BUILDKIT_INLINE_CACHE=1
+          labels: maintainer=Sumeet Singh,version=1.0.1
+
+    # Deploy the Docker image to the GKE cluster
+    - id: k8s-kustomize-deploy
+      name: k8s-kustomize-deploy.
+      uses: cloudbees-io/kustomize-deploy@v1
+      with:
+          kustomization-base-dir: ${{ cloudbees.workspace }}/base
+          kustomization-overlays-dir: ${{ cloudbees.workspace }}/overlays/dev
+          environment-variables: '{"IMAGE_NAME":"nginx:latest","PORT":80}'
+
