@@ -1,0 +1,25 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: random-quotes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: random-quotes
+  template:
+    metadata:
+      labels:
+        app: random-quotes
+    spec:
+      containers:
+      - name: random-quotes
+        image: gcr.io/PROJECT_ID/IMAGE:TAG
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "100m"
+        imagePullPolicy: Always
+        ports:
+        - name: random-quotes
+          containerPort: 80
