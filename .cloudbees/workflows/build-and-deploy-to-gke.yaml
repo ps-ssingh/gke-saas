@@ -24,15 +24,17 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    # Setup gcloud CLI
-    - uses: google-github-actions/setup-gcloud@1bee7de035d65ec5da40a31f8589e240eba8fde5
-      with:
-        service_account_key: ${{ secrets.GKE_SA_KEY }}
-        project_id: ${{ secrets.GKE_PROJECT }}
+    - name: Setup gcloud CLI
+      uses: docker://google/cloud-sdk
+      shell: bash
+      run: |
+        set -x
+        gcloud config set project ${{ secrets.GKE_PROJECT }}
 
-    # Configure Docker to use the gcloud command-line tool as a credential
-    # helper for authentication
-    - run: |-
+        #Activate Service Account
+        echo "${{ secrets.application_credentials }}" | base64 --decode > gcp-credentials.json        
+        gcloud auth activate-service-account --key-file="gcp-credentials.json"
+
         gcloud --quiet auth configure-docker
 
     # Get the GKE credentials so we can deploy to the cluster
