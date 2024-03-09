@@ -17,7 +17,7 @@ env:
 
 jobs:
   setup-gcloud:
-    environment: dev
+    environment: gcp-dev
 
     steps:
     - name: Checkout
@@ -35,7 +35,7 @@ jobs:
         gcloud auth activate-service-account --key-file="gcp-credentials.json"
 
   configure-gke:
-    environment: dev
+    environment: gcp-dev
     needs: setup-gcloud 
     steps:
       - name: Configure GKE credentials
