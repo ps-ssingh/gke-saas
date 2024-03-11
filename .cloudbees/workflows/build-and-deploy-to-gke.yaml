@@ -51,6 +51,6 @@ jobs:
 
           gcloud --quiet auth configure-docker
 
-          gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} --zone=${{ env.GKE_ZONE }}--project=${{ env.PROJECT_ID }}
+          gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} --zone=${{ env.GKE_ZONE }} --project=${{ env.PROJECT_ID }}
 
 
