@@ -28,7 +28,7 @@ jobs:
       shell: bash
       run: |
         set -x
-        gcloud config set project ${{ vars.PROJECT_ID }}
+        gcloud config set project ${{ env.PROJECT_ID }}
 
         #Activate Service Account
         echo "${{ secrets.GCP_AUTH }}" | base64 --decode > gcp-credentials.json        
@@ -45,6 +45,6 @@ jobs:
           set -x
           gcloud --quiet auth configure-docker
 
-          gcloud container clusters get-credentials ${{ vars.GKE_CLUSTER }} --zone=${{ vars.GKE_ZONE }}--project=${{ vars.PROJECT_ID }}
+          gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} --zone=${{ env.GKE_ZONE }}--project=${{ env.PROJECT_ID }}
 
 
