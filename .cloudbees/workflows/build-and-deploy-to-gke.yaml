@@ -9,7 +9,7 @@ on:
 
 
 env:
-  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+  PROJECT_ID: ps-ssingh-gcp
   GKE_CLUSTER: saas-cluster  # Add your cluster name here.
   GKE_ZONE: us-east1-b   # Add your cluster zone here.
   DEPLOYMENT_NAME: gke-test # Add your deployment name here.
@@ -28,10 +28,10 @@ jobs:
       shell: bash
       run: |
         set -x
-        gcloud config set project ${{ secrets.GKE_PROJECT }}
+        gcloud config set project ${{ vars.PROJECT_ID }}
 
         #Activate Service Account
-        echo "${{ secrets.application_credentials }}" | base64 --decode > gcp-credentials.json        
+        echo "${{ secrets.GCP_AUTH }}" | base64 --decode > gcp-credentials.json        
         gcloud auth activate-service-account --key-file="gcp-credentials.json"
 
   configure-gke:
@@ -45,6 +45,6 @@ jobs:
           set -x
           gcloud --quiet auth configure-docker
 
-          gcloud container clusters get-credentials ${{ vars.GKE_CLUSTER }} --zone=${{ vars.GKE_ZONE }}--project=${{ secrets.GKE_PROJECT }}
+          gcloud container clusters get-credentials ${{ vars.GKE_CLUSTER }} --zone=${{ vars.GKE_ZONE }}--project=${{ vars.PROJECT_ID }}
 
 
